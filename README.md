@@ -33,7 +33,7 @@ To load the data to your cluster simply do:
 ```
 make load-data
 ```
-Go on and open [Zeppelin](http://localhost), choose any available notebook and try to execute it.
+Go on and open [Zeppelin](http://localhost), make a notebook and try to execute it.
 ![Apache Zeppelin RDF POI](./docs/images/POI.png "Apache Zeppelin Running POI Example")
 
 To restart Zeppelin without restarting the whole stack:
