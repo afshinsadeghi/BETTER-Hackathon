@@ -1,0 +1,62 @@
+%spark
+import org.apache.jena.riot.Lang
+import com.typesafe.config.ConfigFactory
+import net.sansa_stack.ml.spark.clustering.utils.DataProcessing
+import net.sansa_stack.rdf.spark.io._
+
+
+val input = "/data/EOPEN_POIs_100.nt"
+val lang = Lang.NTRIPLES
+
+val triples = spark.rdf(lang)(input)
+
+import org.apache.spark.rdd.RDD
+case class spatial(longitude: Double, latitude: Double)
+
+def getPOICoordinates: RDD[(Long, spatial)] = {
+    // get the coordinates of pois
+    val pattern = "POINT (.+ .+)".r
+    val poiCoordinatesString = triples.filter(x => x.getPredicate.toString().equalsIgnoreCase("http://www.opengis.net/ont/geosparql#asWKT"))
+    val removeRelation=poiCoordinatesString.filter(f => (!f.getSubject.toString().contains("http://slipo.eu/id/x")))
+      .map(x => (x.getSubject.toString().replace("http://slipo.eu/id/poi/", "").replace("","").replace("/geometry", "")
+      .toLong,pattern.findFirstIn(x.getObject.toString()).head.replace("POINT ", "") 
+          .replace("^^http://www.opengis.net/ont/geosparql#wktLiteral", "").replaceAll("^\"|\"$", ""))) 
+    //println(removeRelation.count)
+          // transform to Coordinate object
+    
+    val m=removeRelation.mapValues(x => {
+        val coordinates = x.replace("(", "").replace(")", "").split(" ")
+        spatial(coordinates(0).toDouble, coordinates(1).toDouble)
+    })
+    m
+ }
+var poiCoordinates: RDD[(Long, spatial)]= getPOICoordinates.persist()
+var poiCoordinatesfiltered = triples.filter(x => x.getPredicate.toString().equalsIgnoreCase("http://www.opengis.net/ont/geosparql#asWKT")).map(x => (x.getSubject.toString().replace("http://slipo.eu/id/poi/", "").replace("","").replace("/geometry", "")
+    .toLong, x.getObject.toString().replace("POINT", "").replace("<http://www.opengis.net/def/crs/EPSG/0/4326>","").replace("(", "").replace(")", "")
+          .replace("^^http://www.opengis.net/ont/geosparql#wktLiteral", "").replaceAll("^\"|\"$", "")  ))
+
+
+println(poiCoordinatesfiltered.count)
+println(triples.count)
+poiCoordinatesfiltered.take(2).foreach(println)
+
+
+val POIcoordinates=poiCoordinatesfiltered.mapValues(x => {
+        val coordinates = x.replace("(", "").replace(")", "").split(" ")
+        spatial(coordinates(1).toDouble, coordinates(2).toDouble)
+        })
+        
+
+println(POIcoordinates.count)        
+POIcoordinates.take(3).foreach(println)
+
+
+
+def getCat(): RDD[(Long, String)] = {
+    val keyName=triples.filter(f=>f.getPredicate.toString().contains("http://slipo.eu/def#termValue"))
+    val filterSub=keyName.filter(f=>f.getSubject.toString().contains("http://slipo.eu/id/poi/"))
+    val getKV= filterSub.map(x => ((x.getSubject.toString().replace("http://slipo.eu/id/poi/", "").toLong),
+        x.getObject.toString()))
+    getKV.take(2).foreach(println)
+    getKV    
+}
