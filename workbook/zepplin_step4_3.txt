@@ -1,4 +1,13 @@
 %spark
+def getCat(): RDD[(Long, String)] = {
+    val keyName=triples.filter(f=>f.getPredicate.toString().contains("http://slipo.eu/def#termValue"))
+    val filterSub=keyName.filter(f=>f.getSubject.toString().contains("http://slipo.eu/id/poi/"))
+    val getKV= filterSub.map(x => ((x.getSubject.toString().replace("http://slipo.eu/id/poi/", "").toLong),
+        x.getObject.toString()))
+    getKV.take(2).foreach(println)
+    getKV    
+}
+
 case class PoiOSM(poi_id: Long, coordinate: spatial, categories: String)
 var categoriesOSM= getCat
 var join_e=POIcoordinates.join(categoriesOSM)
