@@ -9,3 +9,4 @@ val input = "/data/EOPEN_POIs_100.nt"
 val lang = Lang.NTRIPLES
 
 
+triples.take(30).foreach(println
