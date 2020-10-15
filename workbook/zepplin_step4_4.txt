@@ -10,4 +10,4 @@ val assignments = forJSON.collect().toList.map(f => f._2._2.length).toArray
 val assm=assignments.toArray
 val lenthCluster=assm.length
 val finaloutputforsaving= ClsutersOSM(lenthCluster,assm,t)
-poiCategorySeta.take(10).foreach(println)
+poiCategorySet.take(10).foreach(println)
