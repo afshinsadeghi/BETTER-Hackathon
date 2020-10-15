@@ -1,0 +1,7 @@
+%spark
+case class PoiOSM(poi_id: Long, coordinate: spatial, categories: String)
+var categoriesOSM= getCat
+var join_e=POIcoordinates.join(categoriesOSM)
+
+val pois=join_e.map(f=>PoiOSM(f._1.toLong,f._2._1,f._2._2.toString))
+pois.take(2).foreach(println)
