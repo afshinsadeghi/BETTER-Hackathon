@@ -1,4 +1,4 @@
-# BETTER-hackathon
+# BETTER-Hackathon
 In this repository you will find a [docker-compose.yml](./docker-compose.yml) for running Hadoop/Spark cluster locally.
 The cluster also includes [Hue](http://gethue.com/) for navigation and copying file to HDFS.
 The notebooks are created and run using [Apache Zeppelin](https://zeppelin.apache.org/).
